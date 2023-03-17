@@ -1,5 +1,5 @@
 cpp-httplib/
 boost_1_78_0/
 cppjieba/
-data/input/*.html
+data/input/
 data/raw_html/raw.txt
