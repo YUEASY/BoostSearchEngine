@@ -1,4 +1,4 @@
 cpp-httplib/
 boost_1_78_0/
 cppjieba/
-data/input/**.html
+data/input/**/*.html
