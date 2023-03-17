@@ -1,0 +1,3 @@
+切换gcc版本	    scl enable devtoolset-7 bash
+后台部署		nohup ./http_server > log/log.txt 2>&1 &
+终止进程		ps axj | grep http_server  ; kill -9 (相应pid)
