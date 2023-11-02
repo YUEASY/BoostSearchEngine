@@ -3,12 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/blueimp-md5/2.16.0/js/md5.js"></script>
 
     <title>Boost Search Engine</title>
-    <link rel="shortcut icon" type="image/icon" href="/favicon.ico">
+    <link href="/favicon.ico" rel="shortcut icon" type="image/icon">
     <style>
         /* 去掉网页中的所有的默认内外边距，html的盒子模型 */
         * {
@@ -23,6 +24,7 @@
         body {
             height: 100%;
         }
+
         /* 设置页面背景色和字体颜色 */
         body {
             background-color: #F9F9F9;
@@ -35,13 +37,121 @@
             /* 设置div的宽度 */
             width: 800px;
             /* 通过设置外边距达到居中对齐的目的 */
-            margin: 0px auto;
             /* 设置外边距的上边距，保持元素和网页的上部距离 */
-            margin-top: 15px;
-
+            margin: 15px auto 0;
             max-width: 1200px;
-
             padding: 20px;
+        }
+
+        .navbar {
+            display: flex;
+            align-items: center; 
+            flex-direction: row-reverse;
+        }
+
+        .navbar button {
+            background-color: #F9F9F9;
+            border: none;
+            cursor: pointer;
+            margin-right: 5vw;
+            font-size: 16px;
+        }
+
+        .navbar button:hover {
+            color: #4e6ef2;
+        }
+
+        .avatar-container {
+            margin-top: 3vh;
+            margin-right: 5vw;
+            height: 8vh;
+        }
+
+        #avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 20px;
+            display:none;
+        }
+
+        .message-login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        .message-login-container form {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .message-login-container form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .message-login-container form input {
+            display: block;
+            width: 20vw;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            height: auto;
+            resize: none;
+        }
+
+
+        .message-login-container form .button-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .message-login-container form .button-container button {
+            display: inline-block;
+            background-color: #4e6ef2;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px auto;
+        }
+
+        .message-login-container form button[type=submit] {
+            margin-right: auto;
+            /* 左侧按钮 */
+        }
+
+        .message-login-container form button[type=button] {
+            margin-left: auto;
+            /* 右侧按钮 */
+        }
+
+        .message-login-container form button[type=submit]:hover {
+            background-color: #324fbc;
+        }
+
+        .message-login-container form button[type=button]:hover {
+            background-color: #333333;
+        }
+
+        .message-login-container form button[type=button] {
+            background-color: #999;
+            margin-left: 10px;
         }
 
         /* 复合选择器，选中container 下的 search */
@@ -51,40 +161,14 @@
             /* 高度设置为52px */
             height: 54px;
 
-            margin:-12px ;
-            /*还不知道有什么用*/
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 20px;
+            margin: -12px -12px 20px;
         }
 
-        /*1.0版本*/
-        /* 先选中input标签， 直接设置标签的属性，先要选中， input：标签选择器*/
-        /* input在进行高度设置的时候，没有考虑边框的问题 */
-         .container1 .search input[type="text"]{
-            /* 设置left浮动 */
-            
-            float: left;
-            width: 600px;
-            height: 50px; 
-
-            margin-top: 1px;
-            /* 设置边框属性：边框的宽度，样式，颜色 */
-            border: 1px solid black;
-            border-radius: 12px 0px 0px 12px;
-            /* 去掉input输入框的有边框 */
-            border-right: none;
-            /* 设置内边距，默认文字不要和左侧边框紧挨着 */
-            padding-left: 10px;
-            /* 设置input内部的字体的颜色和样式 */
-            color: #CCC;
-            font-size: 18px;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        } 
-        
         /*2.0版本*/
-        .container .search input{
+        .container .search input {
             width: 100%;
             max-width: 600px;
             height: 50px;
@@ -100,27 +184,8 @@
             font-family: Arial, Helvetica, sans-serif;
         }
 
-        /*1.0版本*/
-        /* 先选中button标签， 直接设置标签的属性，先要选中， button：标签选择器*/
-        .container1 .search button{
-
-            /* 设置left浮动 */
-            float: left;
-            width: 150px;
-            height: 54px;
-            border-radius: 2px 12px 12px 2px;
-            /* 设置button的背景颜色，#4e6ef2 */
-            background-color: #4e6ef2;
-            /* 设置button中的字体颜色 */
-            color: #FFF;
-            /* 设置字体的大小 */
-            font-size: 22px;
-            font-family: Georgia, 'Times New Roman', Times, serif;
-            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        }
-
         /*2.0版本*/
-        .container .search button{
+        .container .search button {
 
             width: 150px;
             height: 50px;
@@ -136,28 +201,22 @@
 
         }
 
-        /*未知作用*/
         .search button:hover {
             background-color: #3754c1;
         }
-        
+
         .container .result {
             width: 100%;
-            
-            /*未知作用*/
-            margin-top: 20px;
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             margin: 0 -10px;
         }
-        
+
 
         .container .result .item {
-            margin-top: 15px;
-
             /*设置窗块区域*/
-            /* width: calc(40% - 20px); */
+            width: 50vw;
             margin: 0 10px 20px;
             padding: 20px;
             border: 1px solid #ddd;
@@ -181,7 +240,7 @@
             color: #4e6ef2;
 
 
-             margin-bottom: 10px; 
+            margin-bottom: 10px;
         }
 
         .container .result .item a:hover {
@@ -192,9 +251,7 @@
         .container .result .item p {
             margin-top: 5px;
             /* font-size: 16px; */
-             font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif; 
-
-            /*未知作用*/
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
             font-size: 14px;
             line-height: 1.5;
             color: #666;
@@ -212,96 +269,205 @@
 </head>
 
 <body>
+
+    <div class="navbar">
+        <!--    <button class="reg-btn" onclick="">注册</button>-->
+        <button id="log-btn" onclick="showLoginForm()">登录</button>
+        <div class="avatar-container">
+            <img id="avatar" src="./favicon.ico" alt="">
+        </div>
+    </div>
+
+    <div id="message-login" class="message-login-container">
+        <form id="login-form">
+            <h2>登录</h2><br/>
+            <label for="account">账号：</label>
+            <input type="text" id="account" name="account">
+
+            <label for="password">密码：</label>
+            <input type="password" id="password" name="password">
+
+            <div class="button-container">
+                <button type="submit">提交</button>
+                <button type="button" onclick="closeLoginForm()">取消</button>
+            </div>
+        </form>
+    </div>
+
+
+
     <div class="container">
         <div class="search">
-            <input type="text" value="请输入搜索关键字. . ." class="inp-fon">
+            <input class="inp-fon" type="text" value="请输入搜索关键字. . .">
             <button onclick="Search()" style="cursor:pointer">搜索</button>
         </div>
         <div class="result">
             <!--动态生成网页内容-->
             <!--div class="item">
-                <a href="#">标题</a>
-                <p>这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要</p>
-                <i>http://101.43.107.8:8081/</i>
-            </div-->
+            <a href="#">标题</a>
+            <p>这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要这里是摘要</p>
+            <i>http://101.43.107.8:8081/</i>
+        </div-->
         </div>
-        <script>
-            //输入框自动清空
-            $(".container .inp-fon").focus(function () {
-                var oldValue = $(this).val();
-                if (oldValue == this.defaultValue) {
-                    $(this).val("").addClass('focus-fon');
-                }
-            }).blur(function () {
-                var oldValue = $(this).val();
-                if (oldValue == "") {
-                    $(this).val(this.defaultValue).removeClass('focus-fon');;
+    </div>
+    <script>
+
+        let user_info = [
+            {
+                id: 0,
+                account: 0,
+                name: "",
+                email: "",
+                avatar: "",
+                permission_level: 0,
+                is_vip: 0,
+                is_login: false
+            }];
+
+
+        //输入框自动清空
+        $(".container .inp-fon").focus(function () {
+            var oldValue = $(this).val();
+            if (oldValue === this.defaultValue) {
+                $(this).val("").addClass('focus-fon');
+            }
+        }).blur(function () {
+            var oldValue = $(this).val();
+            if (oldValue === "") {
+                $(this).val(this.defaultValue).removeClass('focus-fon');
+            }
+        });
+
+        //回车触发
+        $("body").keydown(function () {
+            if (event.keyCode === "13") {//keyCode=13是回车键
+                Search();
+            }
+        });
+
+        function Search() {
+            //第一步: 提取数据, $可以理解成就是JQuery的别称
+            var query = $(".container .search input").val();
+            if (query === ' ' || query == null) {
+                return;
+            }
+            console.log("query = " + query); //console是浏览器的对话框，可以用来进行查看js数据
+
+            //第二步: 发起http请求, ajax: 属于一个和后端进行数据交互的函数，JQuery中的
+            $.ajax({
+                type: "GET",
+                url: "/s?word=" + query,
+                success: function (data) {
+                    console.log(data);
+                    buildHtml(data);
                 }
             });
+        }
 
-            //回车触发
-            $("body").keydown(function() {
-             if (event.keyCode == "13") {//keyCode=13是回车键
-                Search();
-             }
-         });
+        function buildHtml(data) {
+            if (data === ' ' || data == null) {
+                //document.write("无搜素结果");
+                alert("无搜素结果");
+                return;
+            }
+            // 获取html中的result标签
+            let result_lable = $(".container .result");
+            // 清空历史搜索结果
+            result_lable.empty();
+            for (let elem of data) {
+                // console.log(elem.title);
+                // console.log(elem.url);
+                let a_lable = $("<a>", {
+                    text: elem.title,
+                    href: elem.url,
+                    // 跳转到新的页面
+                    target: "_blank"
+                });
+                let p_lable = $("<p>", {
+                    text: elem.desc
+                });
+                let i_lable = $("<i>", {
+                    text: elem.url
+                });
+                let div_lable = $("<div>", {
+                    class: "item"
+                });
+                a_lable.appendTo(div_lable);
+                p_lable.appendTo(div_lable);
+                i_lable.appendTo(div_lable);
+                div_lable.appendTo(result_lable);
+            }
+        }
 
-            function Search() {
-                //一个弹窗
-                //alert("ok");
 
-                //第一步: 提取数据, $可以理解成就是JQuery的别称
-                let query = $(".container .search input").val();
-                if (query == ' ' || query == null) {
-                    return;
-                }
-                console.log("query = " + query); //console是浏览器的对话框，可以用来进行查看js数据
+        function closeLoginForm() {
+            const formContainer = document.getElementById("message-login");
+            formContainer.style.display = "none";
+        }
 
-                //第二步: 发起http请求, ajax: 属于一个和后端进行数据交互的函数，JQuery中的
+        function showLoginForm() {
+            const formContainer = document.getElementById("message-login");
+            formContainer.style.display = "block";
+        }
+
+        // 登录
+        $(document).ready(function () {
+            $("#login-form").submit(function (event) {
+                event.preventDefault(); // 阻止表单默认提交行为
+
+                // 获取表单数据
+                var account = $("#account").val();
+                var password = md5($("#password").val());
+
+                // // 在控制台显示登录信息
+                // console.log('Account: ' + account);
+                // console.log('Password: ' + password);
+
                 $.ajax({
-                    type: "GET",
-                    url: "/s?word=" + query,
+                    type: "POST",
+                    url: "/login",
+                    data: { account: account, password: password },
                     success: function (data) {
                         console.log(data);
-                        BuildHtml(data);
+                        user_info["id"] = data["id"];
+                        user_info["account"] = data["account"];
+                        user_info["name"] = data["name"];
+                        user_info["email"] = data["email"];
+                        user_info["avatar"] = data["avatar"];
+                        user_info["permission_level"] = data["permission_level"];
+                        user_info["is_vip"] = data["is_vip"];
+                        user_info["is_login"] = true;
+                        closeLoginForm();
+                        document.getElementById("log-btn").style.display = "none";
+                        document.getElementById("avatar").style.display = "block";
+                        $("#avatar").attr("src", user_info["avatar"]);
                     }
                 });
-            }
-            function BuildHtml(data) {
-                if (data == ' ' || data == null) {
-                    //document.write("无搜素结果");
-                    alert("无搜素结果");
-                    return;
+            });
+        });
+
+
+         $.ajax({
+                type: "GET",
+                url: "/l",
+                success: function (data) {
+                    console.log(data);
+                    user_info["id"] = data["id"];
+                    user_info["account"] = data["account"];
+                    user_info["name"] = data["name"];
+                    user_info["email"] = data["email"];
+                    user_info["avatar"] = data["avatar"];
+                    user_info["permission_level"] = data["permission_level"];
+                    user_info["is_vip"] = data["is_vip"];
+                    user_info["is_login"] = true;
+                    document.getElementById("log-btn").style.display = "none";
+                    document.getElementById("avatar").style.display = "block";
+                    $("#avatar").attr("src", user_info["avatar"]);
                 }
-                // 获取html中的result标签
-                let result_lable = $(".container .result");
-                // 清空历史搜索结果
-                result_lable.empty();
-                for (let elem of data) {
-                    // console.log(elem.title);
-                    // console.log(elem.url);
-                    let a_lable = $("<a>", {
-                        text: elem.title,
-                        href: elem.url,
-                        // 跳转到新的页面
-                        target: "_blank"
-                    });
-                    let p_lable = $("<p>", {
-                        text: elem.desc
-                    });
-                    let i_lable = $("<i>", {
-                        text: elem.url
-                    });
-                    let div_lable = $("<div>", {
-                        class: "item"
-                    });
-                    a_lable.appendTo(div_lable);
-                    p_lable.appendTo(div_lable);
-                    i_lable.appendTo(div_lable);
-                    div_lable.appendTo(result_lable);
-                }
-            }
-        </script>
+            });
+        // 注册
+
+    </script>
 </body>
 
 </html>

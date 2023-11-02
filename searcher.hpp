@@ -1,7 +1,7 @@
 #pragma once
 #include "index.hpp"
 #include "log.hpp"
-// #include "util.hpp"//已包含在index.hpp内
+#include "mysql_operations.hpp"
 #include <algorithm>
 #include <jsoncpp/json/json.h>
 // 搜素
@@ -26,17 +26,28 @@ namespace ns_searcher
 
     public:
         void InitSearcher(const std::string &input)
-        {
+        { 
             // 1.获取或创建index对象
             index = ns_index::Index::GetInstance();
             // std::cout << "获取index单例成功. . . " << std::endl;
             LOG(NORMAL, "获取index单例成功. . . ");
             // 2.根据index对象建立索引
-            if(!index->BuildIndex(input))
+            // if(!index->BuildIndex(input))
+            // {
+            //     LOG(FATAL, "建立索引失败. . . ");
+            // }
+            // if (!index->LoadInvertedIndex())
+            // {
+            //     LOG(FATAL, "建立索引失败. . . ");
+            // }
+            // if (!index->SaveInvertedIndex())
+            // {
+            //     LOG(FATAL, "倒排索引保存失败. . . ");
+            // }
+            if(!index->LoadIndex())
             {
-                LOG(FATAL, "建立索引失败. . . ");
+                LOG(FATAL, "加载索引失败. . . ");
             }
-            // std::cout << "建立正排和倒排索引成功. . . " << std::endl;
             LOG(NORMAL, "建立正排和倒排索引成功. . . ");
         }
         // query : 搜素关键字
@@ -107,6 +118,7 @@ namespace ns_searcher
             Json::FastWriter writer;
             *json_string = writer.write(root);
         }
+        
         std::string GetDesc(const std::string &html_content, const std::string &word)
         {
             // 找到word在html_content首次出现的位置，截取相近的上下文

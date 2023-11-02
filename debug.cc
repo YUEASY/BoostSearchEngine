@@ -3,6 +3,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include "mysql_operations.hpp"
 #include "searcher.hpp"
 
 const std::string input = "data/raw_html/raw.txt";

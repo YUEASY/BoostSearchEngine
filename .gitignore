@@ -1,5 +1,6 @@
-cpp-httplib/
-boost_1_78_0/
-cppjieba/
-data/input/**/*.html
-data/input/**/*.png
+cpp-httplib/*
+.vscode/*
+boost_1_83_0/*
+cppjieba/*
+dict/*
+data/input/*

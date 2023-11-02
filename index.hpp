@@ -7,8 +7,10 @@
 #include <fstream>
 #include <ctime>
 #include <mutex>
+#include <jsoncpp/json/json.h>
 #include "util.hpp"
 #include "log.hpp"
+#include "mysql_operations.hpp"
 // 索引
 namespace ns_index
 {
@@ -45,6 +47,8 @@ namespace ns_index
 
         static Index *instance;
         static std::mutex mtx;
+        static ns_operation::TableInverted *tb_inv;
+        static ns_operation::TableDoc *tb_doc;
 
     public:
         ~Index() {}
@@ -58,6 +62,8 @@ namespace ns_index
                 if (nullptr == instance)
                 {
                     instance = new Index();
+                    tb_inv = new ns_operation::TableInverted();
+                    tb_doc = new ns_operation::TableDoc();
                 }
                 mtx.unlock();
             }
@@ -69,7 +75,7 @@ namespace ns_index
             if (doc_id >= forward_index.size()) // 是否越界
             {
                 // std::cerr << "doc_id out reange, error" << std::endl;
-                LOG(WARNING, "越界错误 doc_id out reange, error");
+                LOG(WARNING, "越界错误 doc_id = " + std::to_string(doc_id) + "[max:"+ std::to_string(forward_index.size()) +"]"+" out reange, error");
                 return nullptr;
             }
             return &forward_index[doc_id];
@@ -116,15 +122,93 @@ namespace ns_index
                 timeEnd = clock();
                 if ((timeEnd - timeStart) / CLOCKS_PER_SEC >= 1)
                 {
-                    // std::cout << "已建立索引的文档: " << count << "/8141" << std::endl;
-                    LOG(NORMAL, "当前已建立的索引文档: " + std::to_string(count) + "/8141");
+                    LOG(NORMAL, "当前已建立的索引文档: " + std::to_string(count));
                     timeStart = timeEnd;
+                }
+            }
+            return true;
+        }
+        
+        bool LoadInvertedIndex()    // 根据数据库中正排索引建立倒排索引
+        {
+            Json::Value docs;
+            if (tb_doc->SelectAll(docs) == false)
+            {
+                return false;
+            }
+            for (auto &doc : docs)
+            {
+                DocInfo docif;
+                docif.doc_id = doc["doc_id"].asInt();
+                docif.url = doc["url"].asString();
+                docif.title = doc["title"].asString();
+                docif.content = doc["content"].asString();
+                BuildInvertedIndex(docif);
+                forward_index.push_back(std::move(docif));
+            }
+            return true;
+        }
+
+        bool LoadIndex() // 从数据库读取索引
+        {
+            Json::Value tmps;
+            if (tb_inv->SelectAll(tmps) == false)
+            {
+                return false;
+            }
+
+            for (auto &tmp : tmps)
+            {
+                InvertedElem item;
+                item.doc_id = tmp["doc_id"].asInt();
+                item.word = tmp["word"].asString();
+                item.weight = tmp["weight"].asInt();
+                inverted_index[item.word].push_back(std::move(item));
+            }
+            
+            Json::Value docs;
+            if(tb_doc->SelectAll(docs) == false)
+            {
+                return false;
+            }
+            for(auto &doc : docs)
+            {
+                DocInfo docif;
+                docif.doc_id = doc["doc_id"].asInt();
+                docif.url = doc["url"].asString();
+                docif.title = doc["title"].asString();
+                docif.content = doc["content"].asString();
+                forward_index.push_back(std::move(docif));
+            }
+
+            return true;
+        }
+
+        bool SaveInvertedIndex()   
+        {
+            if (tb_inv->Clear() == false)
+            {
+                return false;
+            }
+            for (auto &item_list : inverted_index)
+            {
+                for (auto &item : item_list.second)
+                {
+                    Json::Value tmp;
+                    tmp["doc_id"] = std::to_string(item.doc_id);
+                    tmp["word"] = item.word;
+                    tmp["weight"] = item.weight;
+                    if (tb_inv->Insert(tmp) == false)
+                    {
+                        return false;
+                    }
                 }
             }
             return true;
         }
 
     private:
+        // 构建正排索引
         DocInfo *BuildForwardIndex(const std::string &line)
         {
             // 1. 解析line，字符串切分 [title\3 content\3 url]
@@ -147,7 +231,7 @@ namespace ns_index
 
             return &forward_index.back();
         }
-
+        // 构建倒排索引
         bool BuildInvertedIndex(const DocInfo &doc)
         {
             struct word_cnt
@@ -193,4 +277,6 @@ namespace ns_index
     };
     std::mutex Index::mtx;
     Index *Index::instance = nullptr;
+    ns_operation::TableInverted *Index::tb_inv = nullptr;
+    ns_operation::TableDoc *Index::tb_doc = nullptr;
 }

@@ -2,13 +2,19 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <memory>
 #include <boost/filesystem.hpp>
+#include <jsoncpp/json/json.h>
 #include "util.hpp"
+#include "mysql_operations.hpp"
+#include <algorithm>
+#include <codecvt>
 
 // 文件/数据处理
-const std::string url_head = "https://www.boost.org/doc/libs/1_78_0/doc/html";
+const std::string url_head = "https://www.boost.org/doc/libs/1_83_0";
 const std::string src_path = "data/input";
 const std::string output = "data/raw_html/raw.txt";
+// const std::string output = "mysql";
 
 typedef struct DocInfo
 {
@@ -20,6 +26,7 @@ typedef struct DocInfo
 bool EnumFile(const std::string &src_path, std::vector<std::string> *files_list);
 bool ParseHtml(const std::vector<std::string> &files_list, std::vector<DocInfo_t> *results);
 bool SaveHtml(const std::vector<DocInfo_t> &results, const std::string &output);
+
 int main()
 {
     std::vector<std::string> files_list;
@@ -39,7 +46,7 @@ int main()
     // 第三步：把解析完的各个文件写入output,以\3作为分割符
     if (!SaveHtml(results, output))
     {
-        std::cerr << "sava html error" << std::endl;
+        std::cerr << "save html error" << std::endl;
         return 3;
     }
     return 0;
@@ -130,7 +137,9 @@ static bool ParseContent(const std::string &file, std::string *content)
             {
                 //'\n'要作为html解析后文本的分割符，所以不保留原始文件的'\n'
                 if (c == '\n')
+                {
                     c = ' ';
+                }
                 content->push_back(c);
             }
             break;
@@ -138,12 +147,14 @@ static bool ParseContent(const std::string &file, std::string *content)
             break;
         }
     }
+    // ns_util::StringUtil::Escape(*content);
+    //*content = ns_util::StringUtil::utf8ToBinaryString(*content);
     return true;
 }
 
 static bool ParseUrl(const std::string &file_path, std::string *url)
 {
-    //std::string url_head;
+    // std::string url_head;
     std::string url_tail = file_path.substr(src_path.size());
 
     *url = url_head + url_tail;
@@ -198,6 +209,9 @@ bool ParseHtml(const std::vector<std::string> &files_list, std::vector<DocInfo_t
 bool SaveHtml(const std::vector<DocInfo_t> &results, const std::string &output)
 {
 #define SEP '\3'
+
+    std::unique_ptr<ns_operation::TableDoc> tb_doc(new ns_operation::TableDoc());
+
     // 按照二进制方式进行写入
     std::ofstream out(output, std::ios::out | std::ios::binary);
     if (!out.is_open())
@@ -206,6 +220,7 @@ bool SaveHtml(const std::vector<DocInfo_t> &results, const std::string &output)
         return false;
     }
 
+    int i = 0;
     for (auto &item : results)
     {
         std::string out_string;
@@ -217,6 +232,17 @@ bool SaveHtml(const std::vector<DocInfo_t> &results, const std::string &output)
         out_string += '\n';
 
         out.write(out_string.c_str(), out_string.size());
+
+        Json::Value tmp;
+        tmp["doc_id"] = i;
+        tmp["title"] = item.title;
+        tmp["content"] = item.content;
+        tmp["url"] = item.url;
+        if (tb_doc->Insert(tmp) == false)
+        {
+            return false;
+        }
+        i++;
     }
     out.close();
 
